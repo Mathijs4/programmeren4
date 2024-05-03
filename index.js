@@ -50,6 +50,24 @@ app.get('/api/user', (req, res) => {
   });
 });
 
+app.get('/api/user/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const user = database.find((user) => user.id === Number(userId));
+
+  if (!user) {
+    return res.status(404).json({
+      status: 404,
+      message: `User with id ${userId} not found`,
+    });
+  }
+
+  res.status(200).json({
+    status: 200,
+    message: 'User found',
+    user,
+  });
+});
+
 app.all('*', (req, res) => {
   res.status(404).json({
     status: 404,
