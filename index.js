@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const port = process.env.PORT || 3000;
 
+let database = [];
+let id = 0;
+
 app.all('*', (req, res, next) => {
   const method = req.method;
   console.log('Method:', method);
