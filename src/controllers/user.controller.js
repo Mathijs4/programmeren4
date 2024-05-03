@@ -31,11 +31,12 @@ let controller = {
 
       next();
     } catch (err) {
-      console.log(err);
-      res.status(400).json({
-        status: 400,
-        message: err.message,
-      });
+        const error = {
+            status: 400,
+            result: err.message,
+        }
+      
+      next(error);
     }
 
   },
@@ -69,15 +70,18 @@ let controller = {
     });
   },
 
-  getUserById: (req, res) => {
+  getUserById: (req, res, next) => {
     const userId = req.params.userId;
     const user = users.find((user) => user.id === Number(userId));
 
     if (!user) {
-      return res.status(404).json({
-        status: 404,
-        message: `User with id ${userId} not found`,
-      });
+        const error = {
+            status: 404,
+            result: `User with id ${userId} not found`
+        }
+
+        return next(error);
+        
     } else {
       res.status(200).json({
         status: 200,
