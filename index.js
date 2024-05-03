@@ -42,6 +42,14 @@ app.post('/api/user', (req, res) => {
   });
 });
 
+app.get('/api/user', (req, res) => {
+  res.status(200).json({
+    status: 200,
+    message: 'List of users',
+    database,
+  });
+});
+
 app.all('*', (req, res) => {
   res.status(404).json({
     status: 404,
