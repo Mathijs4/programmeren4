@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 
 app.use(bodyParser.json());
 
-let database = [];
+let users = [];
 let id = 0;
 
 app.all('*', (req, res, next) => {
@@ -32,8 +32,8 @@ app.post('/api/user', (req, res) => {
     ...user,
   };
   
-  database.push(user);
-  console.log('Database:', database)
+  users.push(user);
+  console.log('Database:', users)
 
   res.status(201).json({
     status: 201,
@@ -46,26 +46,54 @@ app.get('/api/user', (req, res) => {
   res.status(200).json({
     status: 200,
     message: 'List of users',
-    database,
+    users,
   });
 });
 
 app.get('/api/user/:userId', (req, res) => {
   const userId = req.params.userId;
-  const user = database.find((user) => user.id === Number(userId));
+  const user = users.find((user) => user.id === Number(userId));
 
   if (!user) {
     return res.status(404).json({
       status: 404,
       message: `User with id ${userId} not found`,
     });
+  } else {
+    res.status(200).json({
+      status: 200,
+      message: 'User found',
+      user,
+    });
   }
 
-  res.status(200).json({
-    status: 200,
-    message: 'User found',
-    user,
-  });
+  
+});
+
+app.put('/api/user/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const user = users.find((user) => user.id === Number(userId));
+  const updatedUser = req.body;
+
+  if (!user) {
+    return res.status(404).json({
+      status: 404,
+      message: `User with id ${userId} not found`,
+    });
+  } else {
+    users[userId - 1] = {
+      ...users[userId - 1],
+      ...updatedUser
+    };
+
+    res.status(200).json({
+      status: 200,
+      message: 'User updated',
+      user: users[userId - 1],
+    });
+  }
+
+
 });
 
 app.all('*', (req, res) => {
