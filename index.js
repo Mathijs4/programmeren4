@@ -31,9 +31,9 @@ app.post('/api/user', (req, res) => {
     id,
     ...user,
   };
-  
+
   users.push(user);
-  console.log('Database:', users)
+  console.log('Database:', users);
 
   res.status(201).json({
     status: 201,
@@ -66,8 +66,6 @@ app.get('/api/user/:userId', (req, res) => {
       user,
     });
   }
-
-  
 });
 
 app.put('/api/user/:userId', (req, res) => {
@@ -83,7 +81,7 @@ app.put('/api/user/:userId', (req, res) => {
   } else {
     users[userId - 1] = {
       ...users[userId - 1],
-      ...updatedUser
+      ...updatedUser,
     };
 
     res.status(200).json({
@@ -92,8 +90,25 @@ app.put('/api/user/:userId', (req, res) => {
       user: users[userId - 1],
     });
   }
+});
 
+app.delete('/api/user/:userId', (req, res) => {
+  const userId = req.params.userId;
+  const user = users.find((user) => user.id === Number(userId));
 
+  if (!user) {
+    return res.status(404).json({
+      status: 404,
+      message: `User with id ${userId} not found`,
+    });
+  } else {
+    users = users.filter((user) => user.id !== Number(userId));
+
+    res.status(200).json({
+      status: 200,
+      message: 'User deleted',
+    });
+  }
 });
 
 app.all('*', (req, res) => {
