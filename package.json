@@ -4,16 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Mathijs4/programmeren4.git"
   },
-  "author": "",
+  "keywords": [
+    "nodejs",
+    "server",
+    "javascript"
+  ],
+  "author": "Mathijs van Engelen",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Mathijs4/programmeren4/issues"
   },
+  
   "homepage": "https://github.com/Mathijs4/programmeren4#readme"
 }
