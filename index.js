@@ -1,18 +1,27 @@
-const http = require('http')
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
 
-const port = process.env.PORT || 3000
+app.all('*', (req, res, next) => {
+  const method = req.method;
+  console.log('Method:', method);
+  next();
+});
 
-const result = {
-    code: 200,
-    message: 'Hello World'
-}
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 200,
+    message: 'Hello World!',
+  });
+});
 
-const server = http.createServer((req, res) => {
-    res.statusCode = 200
-    res.setHeader('Content-Type', 'text/plain')
-    res.end(JSON.stringify(result))
-})
+app.all('*', (req, res) => {
+  res.status(404).json({
+    status: 404,
+    message: 'Page not found',
+  });
+});
 
-server.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}/`)
-})
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
