@@ -5,8 +5,6 @@ let users = [];
 let id = 0;
 
 let controller = {
-
-  
   addUser: (req, res) => {
     const user = req.body;
 
@@ -15,11 +13,11 @@ let controller = {
     userService.create(user, (err, data) => {
       if (err) {
         const error = {
-            status: 500,
-            result: err.message,
-            };
-        
-            next(error);
+          status: 500,
+          result: err.message,
+        };
+
+        next(error);
       }
 
       res.status(201).json({
@@ -31,16 +29,38 @@ let controller = {
   },
 
   getAllUsers: (req, res) => {
-    res.status(200).json({
-      status: 200,
-      message: 'List of users',
-      users,
+    logger.info('Showing all users');
+
+    userService.getAll((err, data) => {
+      res.status(200).json({
+        status: 200,
+        message: 'List of users',
+        data,
+      });
     });
   },
 
   getUserById: (req, res, next) => {
     const userId = req.params.userId;
-    const user = users.find((user) => user.id === Number(userId));
+
+    logger.info('Get user by id', userId);
+
+    userService.getById(userId, (err, user) => {
+      if (err) {
+        const error = {
+          status: err.status || 500,
+          result: err.message,
+        };
+
+        next(error);
+      }
+
+      res.status(200).json({
+        status: 200,
+        message: 'User found',
+        user,
+      });
+    });
 
     if (!user) {
       const error = {

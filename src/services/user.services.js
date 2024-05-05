@@ -18,6 +18,20 @@ const userService = {
       }
     });
   },
+
+  getAll: (callback) => {
+    logger.info('Get all users');
+
+    database.getAll((err, data) => {
+      if (err) {
+        logger.info('Error getting all users', err.message || 'Unknown error');
+        callback(err, null);
+      } else {
+        logger.trace('All users returned');
+        callback(null, data);
+      }
+    });
+  }
 };
 
 module.exports = userService;
