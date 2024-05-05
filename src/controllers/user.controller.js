@@ -1,4 +1,6 @@
 const assert = require('assert');
+const userService = require('../services/user.services');
+const logger = require('../utils/logger');
 
 let users = [];
 let id = 0;
@@ -31,34 +33,35 @@ let controller = {
 
       next();
     } catch (err) {
-        const error = {
-            status: 400,
-            result: err.message,
-        }
-      
+      const error = {
+        status: 400,
+        result: err.message,
+      };
+
       next(error);
     }
-
   },
 
   addUser: (req, res) => {
-    let user = req.body;
-    id++;
+    const user = req.body;
 
-    console.log('User:', user);
+    logger.info('Created user', user.firstName, user.lastName);
 
-    user = {
-      id,
-      ...user,
-    };
+    userService.create(user, (err, data) => {
+      if (err) {
+        const error = {
+            status: 500,
+            result: err.message,
+            };
+        
+            next(error);
+      }
 
-    users.push(user);
-    console.log('Database:', users);
-
-    res.status(201).json({
-      status: 201,
-      message: 'User created',
-      user,
+      res.status(201).json({
+        status: 201,
+        message: 'User created',
+        data,
+      });
     });
   },
 
@@ -75,13 +78,12 @@ let controller = {
     const user = users.find((user) => user.id === Number(userId));
 
     if (!user) {
-        const error = {
-            status: 404,
-            result: `User with id ${userId} not found`
-        }
+      const error = {
+        status: 404,
+        result: `User with id ${userId} not found`,
+      };
 
-        return next(error);
-        
+      return next(error);
     } else {
       res.status(200).json({
         status: 200,
