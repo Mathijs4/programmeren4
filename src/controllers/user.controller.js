@@ -1,4 +1,3 @@
-const assert = require('assert');
 const userService = require('../services/user.services');
 const logger = require('../utils/logger');
 
@@ -6,42 +5,8 @@ let users = [];
 let id = 0;
 
 let controller = {
-  validateUser: (req, res, next) => {
-    let user = req.body;
-    let {
-      firstName,
-      lastName,
-      emailAdress,
-      password,
-      isActive,
-      street,
-      city,
-      phoneNumber,
-      roles,
-    } = user;
 
-    try {
-      assert(typeof firstName === 'string', 'First name must be a string');
-      assert(typeof lastName === 'string', 'Last name must be a string');
-      assert(typeof emailAdress === 'string', 'Email address must be a string');
-      assert(typeof password === 'string', 'Password must be a string');
-      assert(typeof isActive === 'boolean', 'isActive must be a boolean');
-      assert(typeof street === 'string', 'Street must be a string');
-      assert(typeof city === 'string', 'City must be a string');
-      assert(typeof phoneNumber === 'string', 'Phone number must be a string');
-      assert(Array.isArray(roles), 'Roles must be an array');
-
-      next();
-    } catch (err) {
-      const error = {
-        status: 400,
-        result: err.message,
-      };
-
-      next(error);
-    }
-  },
-
+  
   addUser: (req, res) => {
     const user = req.body;
 
