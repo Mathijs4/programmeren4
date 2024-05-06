@@ -3,21 +3,50 @@ const logger = require('../utils/logger');
 
 const userService = {
   create: (user, callback) => {
-    logger.info('Create user', user);
-
-    database.add(user, (err, data) => {
+    userService.isEmailUnique(user.emailAdress, (err, isUnique) => {
       if (err) {
-        logger.info('Error creating user', err.message || 'Unknown error');
-        callback(err, null);
-      } else {
-        logger.trace(`User created with id ${user.id}`);
-        callback(null, {
-          message: `User created with id ${user.id}`,
-          data: data,
-        });
+        logger.error(
+          'Error checking email uniqueness:',
+          err.message || 'Unknown error'
+        );
+        return callback(err, null);
       }
+
+      if (!isUnique) {
+        const error = { status: 400, message: 'Email already exists' };
+        logger.warn('Email already exists:', user.emailAddress);
+        return callback(error, null);
+      }
+
+      // Email is unique, proceed to add the user
+      database.add(user, (err, data) => {
+        if (err) {
+          logger.error('Error creating user', err.message || 'Unknown error');
+          callback(err, null);
+        } else {
+          logger.trace(`User created with id ${user.id}`);
+          callback(null, {
+            message: `User created with id ${user.id}`,
+            data: data,
+          });
+        }
+      });
     });
   },
+
+  isEmailUnique: (email, callback) => {
+    database.getByEmail(email, (err, user) => {
+      if (err) {
+        logger.error('Error checking email uniqueness:', err.message || 'Unknown error');
+        return callback(err, null);
+      }
+      
+      logger.info('User found by email:', user); // Add this line for debugging
+
+      const isUnique = !user;
+      callback(null, isUnique);
+    });
+},
 
   getAll: (callback) => {
     logger.info('Get all users');
@@ -32,7 +61,7 @@ const userService = {
       }
     });
   },
-  
+
   getById: (userId, callback) => {
     logger.info('Get user by id', userId);
 
@@ -53,12 +82,18 @@ const userService = {
     // Call the database method to update a user by ID
     database.updateById(userId, updatedData, (err, updatedUser) => {
       if (err) {
-        logger.error(`Error updating user with ID ${userId}:`, err.message || 'Unknown error');
+        logger.error(
+          `Error updating user with ID ${userId}:`,
+          err.message || 'Unknown error'
+        );
         return callback(err, null);
       }
 
       if (!updatedUser) {
-        const error = { status: 404, message: `User with ID ${userId} not found` };
+        const error = {
+          status: 404,
+          message: `User with ID ${userId} not found`,
+        };
         logger.warn(`User with ID ${userId} not found for update`);
         return callback(error, null);
       }

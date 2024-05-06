@@ -83,6 +83,13 @@ const database = {
       }
     }, this._delayTime);
   },
+
+  getByEmail(email, callback) {
+    setTimeout(() => {
+      const user = this._data.find((user) => user.emailAdress === email);
+      callback(null, user || null);
+    }, this._delayTime);
+  },
 };
 
 module.exports = database;

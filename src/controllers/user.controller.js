@@ -5,19 +5,19 @@ let users = [];
 let id = 0;
 
 let controller = {
-  addUser: (req, res) => {
+  addUser: (req, res, next) => {
     const user = req.body;
 
-    logger.info('Created user', user.firstName, user.lastName);
+    logger.info('Creating user', user.firstName, user.lastName);
 
     userService.create(user, (err, data) => {
       if (err) {
         const error = {
-          status: 500,
-          result: err.message,
+          status: err.status || 500,
+          message: err.message || 'Unknown error',
         };
 
-        next(error);
+        return next(error);
       }
 
       res.status(201).json({
