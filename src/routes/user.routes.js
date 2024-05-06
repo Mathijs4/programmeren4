@@ -80,9 +80,9 @@ const validateUserCreate = (req, res, next) => {
     );
 
     assert.ok(Array.isArray(roles), 'roles should be an array');
-    
+
     // Move to the next middleware if validation passes
-    next(); 
+    next();
   } catch (err) {
     return res.status(400).json({
       status: 400,
@@ -161,9 +161,9 @@ const validateUserUpdate = (req, res, next) => {
     );
 
     assert.ok(Array.isArray(roles), 'roles should be an array');
-    
+
     // Move to the next middleware if validation passes
-    next(); 
+    next();
   } catch (err) {
     return res.status(400).json({
       status: 400,
@@ -180,16 +180,25 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/api/info', (req, res) => {
+  res.status(200).json({
+    status: 200,
+    message: "Naam: Mathijs van Engelen, Studentnummer: 2217806, Beschrijving: Dit is mijn API voor programmeren 4"
+  });
+});
+
 router.post('/api/user', validateUserCreate, userController.addUser);
 
 router.get('/api/user', userController.getAllUsers);
 
 router.get('/api/user/:userId', userController.getUserById);
 
-router.put('/api/user/:userId', validateUserUpdate, userController.editUserById);
+router.put(
+  '/api/user/:userId',
+  validateUserUpdate,
+  userController.editUserById
+);
 
 router.delete('/api/user/:userId', userController.deleteUserById);
-
-router.get('/api/info/')
 
 module.exports = router;
