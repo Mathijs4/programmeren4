@@ -40,20 +40,18 @@ const database = {
   getById(userId, callback) {
     // Simuleer een asynchrone operatie
     setTimeout(() => {
-        userId = parseInt(userId);
-        console.log(this._data)
-        if (userId < 0 || userId >= this._data.length) {
-            callback(
-            { status: 404, message: `Error: id ${userId} does not exist!` },
-            null
-            );
-        } else {
-            let user = this._data.find((user) => user.id === userId);
-            console.log(user);
+      console.log(this._data);
+      if (userId < 0 || userId >= this._data.length) {
+        callback(
+          { status: 404, message: `Error: id ${userId} does not exist!` },
+          null
+        );
+      } else {
+        let user = this._data.find((user) => user.id === userId);
 
-            callback(null, user);
-            console.log(user);
-        }
+        callback(null, user);
+        console.log(user);
+      }
     }, this._delayTime);
   },
 
@@ -72,7 +70,19 @@ const database = {
     }, this._delayTime);
   },
 
-  // Voeg zelf de overige database functionaliteit toe
+  updateById(userId, updatedData, callback) {
+    setTimeout(() => {
+      if (userId < 0 || userId >= this._data.length) {
+        callback(
+          { status: 404, message: `Error: id ${userId} does not exist!` },
+          null
+        );
+      } else {
+        this._data[userId] = { ...this._data[userId], ...updatedData };
+        callback(null, this._data[userId]);
+      }
+    }, this._delayTime);
+  },
 };
 
 module.exports = database;

@@ -3,11 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const assert = require('assert');
 
-const validateUserId = (req, res, next) => { 
-  
-}
-
-const validateUserCreate = (req, res, next) => {
+const validateUserCreateUpdate = (req, res, next) => {
   try {
     const {
       firstName,
@@ -103,13 +99,13 @@ router.get('/', (req, res) => {
   });
 });
 
-router.post('/api/user', validateUserCreate, userController.addUser);
+router.post('/api/user', validateUserCreateUpdate, userController.addUser);
 
-router.get('/api/user', validateUserId, userController.getAllUsers);
+router.get('/api/user', userController.getAllUsers);
 
 router.get('/api/user/:userId', userController.getUserById);
 
-router.put('/api/user/:userId', userController.editUserById);
+router.put('/api/user/:userId', validateUserCreateUpdate, userController.editUserById);
 
 router.delete('/api/user/:userId', userController.deleteUserById);
 

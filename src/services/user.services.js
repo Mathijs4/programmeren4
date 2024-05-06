@@ -46,6 +46,27 @@ const userService = {
       }
     });
   },
+
+  updateUserById: (userId, updatedData, callback) => {
+    logger.info('Updating user with ID:', userId);
+
+    // Call the database method to update a user by ID
+    database.updateById(userId, updatedData, (err, updatedUser) => {
+      if (err) {
+        logger.error(`Error updating user with ID ${userId}:`, err.message || 'Unknown error');
+        return callback(err, null);
+      }
+
+      if (!updatedUser) {
+        const error = { status: 404, message: `User with ID ${userId} not found` };
+        logger.warn(`User with ID ${userId} not found for update`);
+        return callback(error, null);
+      }
+
+      logger.info('User updated:', updatedUser);
+      callback(null, updatedUser);
+    });
+  },
 };
 
 module.exports = userService;

@@ -28,10 +28,18 @@ let controller = {
     });
   },
 
-  getAllUsers: (req, res) => {
+  getAllUsers: (req, res, next) => {
     logger.info('Showing all users');
 
     userService.getAll((err, data) => {
+      if (err) {
+        const error = {
+          status: 500,
+          result: err.message,
+        };
+
+        return next(error);
+      }
       res.status(200).json({
         status: 200,
         message: 'List of users',
@@ -41,20 +49,20 @@ let controller = {
   },
 
   getUserById: (req, res, next) => {
-    const userId = req.params.userId;
-  
+    const userId = parseInt(req.params.userId);
+
     logger.info('Get user by id', userId);
-  
+
     userService.getById(userId, (err, user) => {
       if (err) {
         const error = {
           status: err.status || 500,
           result: err.message,
         };
-  
-        return next(error); 
+
+        return next(error);
       }
-  
+
       res.status(200).json({
         status: 200,
         message: 'User found',
@@ -62,31 +70,29 @@ let controller = {
       });
     });
   },
-  
-  
 
-  editUserById: (req, res) => {
+  editUserById: (req, res, next) => {
     const userId = req.params.userId;
-    const user = users.find((user) => user.id === Number(userId));
-    const updatedUser = req.body;
+    const updatedData = req.body;
 
-    if (!user) {
-      return res.status(404).json({
-        status: 404,
-        message: `User with id ${userId} not found`,
-      });
-    } else {
-      users[userId - 1] = {
-        ...users[userId - 1],
-        ...updatedUser,
-      };
+    logger.info('Updating user by ID:', userId);
+
+    userService.updateUserById(userId, updatedData, (err, updatedUser) => {
+      if (err) {
+        const error = {
+          status: err.status || 404,
+          message: err.message || `User with ID ${userId} not found`,
+        };
+        logger.error('Error updating user by ID:', error);
+        return next(error); // Pass the error to the error-handling middleware
+      }
 
       res.status(200).json({
         status: 200,
         message: 'User updated',
-        user: users[userId - 1],
+        user: updatedUser,
       });
-    }
+    });
   },
 
   deleteUserById: (req, res) => {
