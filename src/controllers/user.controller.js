@@ -42,41 +42,28 @@ let controller = {
 
   getUserById: (req, res, next) => {
     const userId = req.params.userId;
-
+  
     logger.info('Get user by id', userId);
-
+  
     userService.getById(userId, (err, user) => {
       if (err) {
         const error = {
           status: err.status || 500,
           result: err.message,
         };
-
+  
         next(error);
       }
-
+  
       res.status(200).json({
         status: 200,
         message: 'User found',
         user,
       });
     });
-
-    if (!user) {
-      const error = {
-        status: 404,
-        result: `User with id ${userId} not found`,
-      };
-
-      return next(error);
-    } else {
-      res.status(200).json({
-        status: 200,
-        message: 'User found',
-        user,
-      });
-    }
+  
   },
+  
 
   editUserById: (req, res) => {
     const userId = req.params.userId;

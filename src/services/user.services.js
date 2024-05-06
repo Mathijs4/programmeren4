@@ -31,7 +31,21 @@ const userService = {
         callback(null, data);
       }
     });
-  }
+  },
+  
+  getById: (userId, callback) => {
+    logger.info('Get user by id', userId);
+
+    database.getById(userId, (err, user) => {
+      if (err) {
+        logger.info('Error getting user by id', err.message || 'Unknown error');
+        callback(err, null);
+      } else {
+        logger.trace(`User with id ${userId} returned`);
+        callback(null, user);
+      }
+    });
+  },
 };
 
 module.exports = userService;
