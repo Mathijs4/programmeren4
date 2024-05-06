@@ -52,7 +52,7 @@ let controller = {
           result: err.message,
         };
   
-        next(error);
+        return next(error); 
       }
   
       res.status(200).json({
@@ -61,8 +61,8 @@ let controller = {
         user,
       });
     });
-  
   },
+  
   
 
   editUserById: (req, res) => {
