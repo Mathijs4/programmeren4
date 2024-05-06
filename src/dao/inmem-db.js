@@ -4,8 +4,8 @@
 // De array bevat een aantal dummy records.
 // De database heeft twee methoden: get en add.
 // Opdracht: Voeg de overige methoden toe.
-//
-const database = {
+
+    const database = {
   // het array met dummy records. Dit is de 'database'.
   _data: [
     {
@@ -47,7 +47,7 @@ const database = {
           null
         );
       } else {
-        let user = this._data.find((user) => user.id === userId);
+        const user = this._data.find((user) => user.id === userId);
 
         callback(null, user);
         console.log(user);
@@ -83,6 +83,24 @@ const database = {
       }
     }, this._delayTime);
   },
+
+  deleteUserById(userId, callback) {
+    setTimeout(() => {
+      const index = this._data.findIndex(user => user.id === userId);
+  
+      if (index === -1) {
+        // User with the given ID was not found
+        callback({ status: 404, message: `Error: User with ID ${userId} does not exist!` }, null);
+      } else {
+        const deletedUser = this._data[index];
+
+        // Remove the user from the array at the found index
+        this._data.splice(index, 1);
+        callback(null, { status: 200, message: `User with ID ${userId} deleted successfully` }, deletedUser);
+      }
+    }, this._delayTime);
+  },
+  
 
   getByEmail(email, callback) {
     setTimeout(() => {

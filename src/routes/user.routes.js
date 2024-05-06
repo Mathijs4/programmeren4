@@ -180,14 +180,16 @@ router.get('/', (req, res) => {
   });
 });
 
-router.post('/api/user', validateUserCreateUpdate, userController.addUser);
+router.post('/api/user', validateUserCreate, userController.addUser);
 
 router.get('/api/user', userController.getAllUsers);
 
 router.get('/api/user/:userId', userController.getUserById);
 
-router.put('/api/user/:userId', validateUserCreateUpdate, userController.editUserById);
+router.put('/api/user/:userId', validateUserUpdate, userController.editUserById);
 
 router.delete('/api/user/:userId', userController.deleteUserById);
+
+router.get('/api/info/')
 
 module.exports = router;
