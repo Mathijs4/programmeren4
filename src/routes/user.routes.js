@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const assert = require('assert');
 
-const validateUserCreateUpdate = (req, res, next) => {
+const validateUserCreate = (req, res, next) => {
   try {
     const {
       firstName,
@@ -69,6 +69,87 @@ const validateUserCreateUpdate = (req, res, next) => {
     assert.strictEqual(typeof city, 'string', 'city should be a string');
 
     assert.ok(phoneNumber, 'phoneNumber should not be empty');
+    assert.strictEqual(
+      typeof phoneNumber,
+      'string',
+      'phoneNumber should be a string'
+    );
+    assert.ok(
+      /^06[-\s]?\d{8}$/.test(phoneNumber),
+      'phoneNumber should match the pattern'
+    );
+
+    assert.ok(Array.isArray(roles), 'roles should be an array');
+    
+    // Move to the next middleware if validation passes
+    next(); 
+  } catch (err) {
+    return res.status(400).json({
+      status: 400,
+      message: 'Invalid user data',
+      error: err.toString(),
+    });
+  }
+};
+
+const validateUserUpdate = (req, res, next) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      emailAdress,
+      password,
+      isActive,
+      street,
+      city,
+      phoneNumber,
+      roles,
+    } = req.body;
+
+    assert.strictEqual(
+      typeof firstName,
+      'string',
+      'firstName should be a string'
+    );
+
+    assert.strictEqual(
+      typeof lastName,
+      'string',
+      'lastName should be a string'
+    );
+
+    assert.strictEqual(
+      typeof emailAdress,
+      'string',
+      'emailAddress should be a string'
+    );
+    assert.ok(
+      /^[a-zA-Z]{1}[.]{1}[a-zA-Z]{2,}\@[a-zA-Z]{2,}\.[a-zA-Z]{2,3}$/.test(
+        emailAdress
+      ),
+      'emailAddress should match the pattern'
+    );
+
+    assert.strictEqual(
+      typeof password,
+      'string',
+      'password should be a string'
+    );
+    assert.ok(
+      /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/.test(password),
+      'password should match the pattern'
+    );
+
+    assert.strictEqual(
+      typeof isActive,
+      'boolean',
+      'isActive should be a boolean'
+    );
+
+    assert.strictEqual(typeof street, 'string', 'street should be a string');
+
+    assert.strictEqual(typeof city, 'string', 'city should be a string');
+
     assert.strictEqual(
       typeof phoneNumber,
       'string',
