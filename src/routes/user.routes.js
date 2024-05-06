@@ -3,7 +3,10 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const assert = require('assert');
 
-// TC-201
+const validateUserId = (req, res, next) => { 
+  
+}
+
 const validateUserCreate = (req, res, next) => {
   try {
     const {
@@ -81,8 +84,9 @@ const validateUserCreate = (req, res, next) => {
     );
 
     assert.ok(Array.isArray(roles), 'roles should be an array');
-
-    next(); // Move to the next middleware if validation passes
+    
+    // Move to the next middleware if validation passes
+    next(); 
   } catch (err) {
     return res.status(400).json({
       status: 400,
@@ -101,7 +105,7 @@ router.get('/', (req, res) => {
 
 router.post('/api/user', validateUserCreate, userController.addUser);
 
-router.get('/api/user', userController.getAllUsers);
+router.get('/api/user', validateUserId, userController.getAllUsers);
 
 router.get('/api/user/:userId', userController.getUserById);
 

@@ -40,17 +40,22 @@ const database = {
   getById(userId, callback) {
     // Simuleer een asynchrone operatie
     setTimeout(() => {
-      if (userId < 0 || userId >= this._data.length) {
-        callback({ status: 404, message: `Error: id ${userId} does not exist!` }, null);
-      } else {
-        const user = this._data.find((user) => user.id === userId);
+        userId = parseInt(userId);
+        console.log(this._data)
+        if (userId < 0 || userId >= this._data.length) {
+            callback(
+            { status: 404, message: `Error: id ${userId} does not exist!` },
+            null
+            );
+        } else {
+            let user = this._data.find((user) => user.id === userId);
+            console.log(user);
 
-        callback(null, user);
-        console.log(user)
-      }
+            callback(null, user);
+            console.log(user);
+        }
     }, this._delayTime);
   },
-
 
   add(item, callback) {
     // Simuleer een asynchrone operatie
@@ -60,7 +65,7 @@ const database = {
       // Voeg item toe aan de array
       this._data.push(item);
 
-      console.log(this._data)
+      console.log(this._data);
       // Roep de callback aan het einde van de operatie
       // met het toegevoegde item als argument, of null als er een fout is opgetreden
       callback(null, item);
