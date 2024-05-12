@@ -30,11 +30,10 @@
     "singleQuote": true
   },
   "devDependencies": {
-    "nodemon": "^3.1.0",
+    "chai": "^4.4.1",
     "chai-http": "^4.4.0",
     "mocha": "^10.4.0",
-    "chai": "^5.1.1"
-
+    "nodemon": "^3.1.0"
   },
   "dependencies": {
     "body-parser": "^1.20.2",
