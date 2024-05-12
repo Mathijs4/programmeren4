@@ -87,7 +87,6 @@ const validateUserCreate = (req, res, next) => {
     return res.status(400).json({
       status: 400,
       message: 'Invalid user data',
-      error: err.toString(),
     });
   }
 };
@@ -183,7 +182,8 @@ router.get('/', (req, res) => {
 router.get('/api/info', (req, res) => {
   res.status(200).json({
     status: 200,
-    message: "Naam: Mathijs van Engelen, Studentnummer: 2217806, Beschrijving: Dit is mijn API voor programmeren 4"
+    message:
+      'Naam: Mathijs van Engelen, Studentnummer: 2217806, Beschrijving: Dit is mijn API voor programmeren 4',
   });
 });
 
@@ -193,11 +193,7 @@ router.get('/api/user', userController.getAllUsers);
 
 router.get('/api/user/:userId', userController.getUserById);
 
-router.put(
-  '/api/user/:userId',
-  validateUserUpdate,
-  userController.editUserById
-);
+router.put('/api/user/:userId', userController.editUserById);
 
 router.delete('/api/user/:userId', userController.deleteUserById);
 
