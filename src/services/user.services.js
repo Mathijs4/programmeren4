@@ -1,37 +1,77 @@
-const database = require('../dao/inmem-db');
+const database = require('../dao/mysql-db');
 const logger = require('../utils/logger');
 
 const userService = {
   create: (user, callback) => {
-    userService.isEmailUnique(user.emailAdress, (err, isUnique) => {
-      if (err) {
-        logger.error(
-          'Error checking email uniqueness:',
-          err.message || 'Unknown error'
-        );
-        return callback(err, null);
-      }
+    logger.info('create user', user);
 
-      if (!isUnique) {
-        const error = { status: 400, message: 'Email already exists' };
-        logger.warn('Email already exists:', user.emailAddress);
-        return callback(error, null);
-      }
+        database.getConnection(function (err, connection) {
+            if (err) {
+                logger.error(err);
+                callback(err, null);
+                return;
+            }
 
-      // Email is unique, proceed to add the user
-      database.add(user, (err, data) => {
-        if (err) {
-          logger.error('Error creating user', err.message || 'Unknown error');
-          callback(err, null);
-        } else {
-          logger.trace(`User created with id ${user.id}`);
-          callback(null, {
-            message: `User created with id ${user.id}`,
-            data: data,
-          });
-        }
-      });
-    });
+            const { firstName, lastName, isActive, emailAddress, password, phoneNumber, roles, street, city } = user;
+
+            connection.query(
+                'INSERT INTO user (firstName, lastName, isActive, emailAddress, password, phoneNumber, roles, street, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [firstName, lastName, isActive, emailAddress, password, phoneNumber, roles, street, city],
+                function (error, results, fields) {
+                    connection.release();
+
+                    if (error) {
+                        if (error.code === 'ER_DUP_ENTRY') {
+                            const errorMessage = `Email address '${emailAddress}' already exists.`
+                            const errorObject = new Error(errorMessage)
+                            errorObject.status = 400
+                            callback(errorObject, null)
+                        } else {
+
+                            logger.error('Error creating user:', error.message || 'unknown error')
+                            callback(error, null)
+                        }
+                    }  else {
+                        logger.trace('User created.')
+                        callback(null, {
+                            status: 201,
+                            message: 'User created.',
+                            data: user
+                        });
+                    }
+                }
+            );
+        });
+
+    // userService.isEmailUnique(user.emailAdress, (err, isUnique) => {
+    //   if (err) {
+    //     logger.error(
+    //       'Error checking email uniqueness:',
+    //       err.message || 'Unknown error'
+    //     );
+    //     return callback(err, null);
+    //   }
+
+    //   if (!isUnique) {
+    //     const error = { status: 400, message: 'Email already exists' };
+    //     logger.warn('Email already exists:', user.emailAddress);
+    //     return callback(error, null);
+    //   }
+
+    //   // Email is unique, proceed to add the user
+    //   database.add(user, (err, data) => {
+    //     if (err) {
+    //       logger.error('Error creating user', err.message || 'Unknown error');
+    //       callback(err, null);
+    //     } else {
+    //       logger.trace(`User created with id ${user.id}`);
+    //       callback(null, {
+    //         message: `User created with id ${user.id}`,
+    //         data: data,
+    //       });
+    //     }
+    //   });
+    // });
   },
 
   isEmailUnique: (email, callback) => {
