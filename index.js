@@ -1,8 +1,11 @@
 const express = require('express');
+const userRoutes = require('./src/routes/user.routes');
+const authRoutes = require('./src/routes/authentication.routes').routes;
+const bodyParser = require('body-parser');
+
+
 const app = express();
 const port = process.env.PORT || 3000;
-const bodyParser = require('body-parser');
-const router = require('./src/routes/user.routes');
 
 app.use(bodyParser.json());
 
@@ -12,7 +15,9 @@ app.all('*', (req, res, next) => {
   next();
 });
 
-app.use(router);
+
+app.use(userRoutes);
+app.use('/api/auth', authRoutes);
 
 app.all('*', (req, res) => {
   res.status(404).json({

@@ -1,5 +1,5 @@
 const database = require('../dao/mysql-db');
-const logger = require('../utils/logger');
+const logger = require('../util/logger');
 
 const userService = {
   create: (user, callback) => {

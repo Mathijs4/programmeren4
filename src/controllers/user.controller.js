@@ -1,5 +1,5 @@
 const userService = require('../services/user.services');
-const logger = require('../utils/logger');
+const logger = require('../util/logger');
 
 let users = [];
 let id = 0;
