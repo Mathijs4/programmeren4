@@ -3,107 +3,121 @@ const logger = require('../utils/logger');
 
 const userService = {
   create: (user, callback) => {
-    logger.info('create user', user);
+    logger.info('creating user', user);
 
-        database.getConnection(function (err, connection) {
-            if (err) {
-                logger.error(err);
-                callback(err, null);
-                return;
-            }
-
-            const { firstName, lastName, isActive, emailAddress, password, phoneNumber, roles, street, city } = user;
-
-            connection.query(
-                'INSERT INTO user (firstName, lastName, isActive, emailAddress, password, phoneNumber, roles, street, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                [firstName, lastName, isActive, emailAddress, password, phoneNumber, roles, street, city],
-                function (error, results, fields) {
-                    connection.release();
-
-                    if (error) {
-                        if (error.code === 'ER_DUP_ENTRY') {
-                            const errorMessage = `Email address '${emailAddress}' already exists.`
-                            const errorObject = new Error(errorMessage)
-                            errorObject.status = 400
-                            callback(errorObject, null)
-                        } else {
-
-                            logger.error('Error creating user:', error.message || 'unknown error')
-                            callback(error, null)
-                        }
-                    }  else {
-                        logger.trace('User created.')
-                        callback(null, {
-                            status: 201,
-                            message: 'User created.',
-                            data: user
-                        });
-                    }
-                }
-            );
-        });
-
-    // userService.isEmailUnique(user.emailAdress, (err, isUnique) => {
-    //   if (err) {
-    //     logger.error(
-    //       'Error checking email uniqueness:',
-    //       err.message || 'Unknown error'
-    //     );
-    //     return callback(err, null);
-    //   }
-
-    //   if (!isUnique) {
-    //     const error = { status: 400, message: 'Email already exists' };
-    //     logger.warn('Email already exists:', user.emailAddress);
-    //     return callback(error, null);
-    //   }
-
-    //   // Email is unique, proceed to add the user
-    //   database.add(user, (err, data) => {
-    //     if (err) {
-    //       logger.error('Error creating user', err.message || 'Unknown error');
-    //       callback(err, null);
-    //     } else {
-    //       logger.trace(`User created with id ${user.id}`);
-    //       callback(null, {
-    //         message: `User created with id ${user.id}`,
-    //         data: data,
-    //       });
-    //     }
-    //   });
-    // });
-  },
-
-  isEmailUnique: (email, callback) => {
-    database.getByEmail(email, (err, user) => {
+    database.getConnection(function (err, connection) {
       if (err) {
-        logger.error(
-          'Error checking email uniqueness:',
-          err.message || 'Unknown error'
-        );
-        return callback(err, null);
-      }
-
-      logger.info('User found by email:', user); // Add this line for debugging
-
-      const isUnique = !user;
-      callback(null, isUnique);
-    });
-  },
-
-  getAll: (callback) => {
-    logger.info('Get all users');
-
-    database.getAll((err, data) => {
-      if (err) {
-        logger.info('Error getting all users', err.message || 'Unknown error');
+        logger.error('Error creating user', err);
         callback(err, null);
+        return;
+      }
+
+      const {
+        firstName,
+        lastName,
+        isActive,
+        emailAdress,
+        password,
+        phoneNumber,
+        roles,
+        street,
+        city,
+      } = user;
+
+      connection.query(`INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city) VALUES ('${firstName}', '${lastName}', ${isActive}, '${emailAdress}', '${password}', '${phoneNumber}', '${roles}', '${street}', '${city}')`,
+      
+        function (error, results, fields) {
+          connection.release();
+
+          if (error) {
+            if (error.code === 'ER_DUP_ENTRY') {
+              const errorMessage = `Email address '${emailAdress}' already exists.`;
+              const errorObject = new Error(errorMessage);
+              errorObject.status = 400;
+              callback(errorObject, null);
+            } else {
+              logger.error(
+                'Error creating user:',
+                error.message || 'unknown error'
+              );
+              callback(error, null);
+            }
+          } else {
+            logger.trace('User created.');
+            callback(null, {
+              status: 201,
+              message: 'User created.',
+              data: user,
+            });
+          }
+        }
+      );
+    });
+  },
+
+  getAll: (isActive, callback) => {
+    logger.info('Getting all users');
+    database.getConnection(function (err, connection) {
+      if (err) {
+        logger.error(err);
+        callback(err, null);
+        // return;
+      }
+      if (isActive === undefined) {
+        connection.query(
+          'SELECT * FROM `user`',
+          function (error, results, fields) {
+            connection.release();
+
+            if (error) {
+              logger.error('Error getting all users', error);
+              callback(error, null);
+            } else {
+              logger.debug(results);
+              callback(null, {
+                status: 200,
+                message: `Found ${results.length} users.`,
+                data: results,
+              });
+            }
+          }
+        );
       } else {
-        logger.trace('All users returned');
-        callback(null, data);
+        connection.query(
+          'SELECT * FROM `user` WHERE isActive = ?',
+          [isActive],
+          function (error, results, fields) {
+            connection.release();
+
+            if (error) {
+              logger.error(error);
+              callback(error, null);
+            } else {
+              logger.debug(results);
+              callback(null, {
+                message: `Found ${results.length} users.`,
+                data: results,
+              });
+            }
+          }
+        );
       }
     });
   },
+
+  // getAll: (callback) => {
+  //   logger.info('Getting all users');
+
+  //   database.getAll((err, data) => {
+  //     if (err) {
+  //       logger.info('Error getting all users', err.message || 'Unknown error');
+  //       callback(err, null);
+  //     } else {
+  //       logger.trace('All users returned');
+  //       callback(null, data);
+  //     }
+  //   });
+  // },
 
   getById: (userId, callback) => {
     logger.info('Get user by id', userId);
@@ -148,7 +162,7 @@ const userService = {
 
   deleteUserById: (userId, callback) => {
     logger.info('Deleting user with ID:', userId);
-  
+
     // Call the database method to delete a user by ID
     database.deleteUserById(userId, (err, deletedUser) => {
       if (err) {
@@ -158,7 +172,7 @@ const userService = {
         );
         return callback(err, null);
       }
-  
+
       if (!deletedUser) {
         const error = {
           status: 404,
@@ -167,12 +181,11 @@ const userService = {
         logger.warn(`User with ID ${userId} not found for delete`);
         return callback(error, null);
       }
-  
+
       // Deleted user successfully, pass the deleted user data to the callback
       callback(null, deletedUser);
     });
   },
-  
 };
 
 module.exports = userService;
