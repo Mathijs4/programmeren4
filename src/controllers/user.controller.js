@@ -30,14 +30,16 @@ let controller = {
 
   getAllUsers: (req, res, next) => {
     logger.info('Showing all users');
-
-    userService.getAll((err, data) => {
+  
+    const isActive = req.body.isActive;
+  
+    userService.getAll(isActive, (err, data) => {
       if (err) {
         const error = {
           status: 500,
           result: err.message,
         };
-
+  
         return next(error);
       }
       res.status(200).json({
@@ -47,7 +49,6 @@ let controller = {
       });
     });
   },
-
   getUserById: (req, res, next) => {
     const userId = parseInt(req.params.userId);
 

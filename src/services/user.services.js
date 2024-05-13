@@ -24,8 +24,9 @@ const userService = {
         city,
       } = user;
 
-      connection.query(`INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city) VALUES ('${firstName}', '${lastName}', ${isActive}, '${emailAdress}', '${password}', '${phoneNumber}', '${roles}', '${street}', '${city}')`,
-      
+      connection.query(
+        `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city) VALUES ('${firstName}', '${lastName}', ${isActive}, '${emailAdress}', '${password}', '${phoneNumber}', '${roles}', '${street}', '${city}')`,
+
         function (error, results, fields) {
           connection.release();
 
@@ -33,6 +34,7 @@ const userService = {
             if (error.code === 'ER_DUP_ENTRY') {
               const errorMessage = `Email address '${emailAdress}' already exists.`;
               const errorObject = new Error(errorMessage);
+
               errorObject.status = 400;
               callback(errorObject, null);
             } else {
@@ -40,10 +42,12 @@ const userService = {
                 'Error creating user:',
                 error.message || 'unknown error'
               );
+
               callback(error, null);
             }
           } else {
             logger.trace('User created.');
+
             callback(null, {
               status: 201,
               message: 'User created.',
@@ -57,79 +61,80 @@ const userService = {
 
   getAll: (isActive, callback) => {
     logger.info('Getting all users');
-    database.getConnection(function (err, connection) {
+
+    database.getConnection((err, connection) => {
       if (err) {
-        logger.error(err);
+        logger.error('Error getting database connection:', err);
         callback(err, null);
-        // return;
       }
-      if (isActive === undefined) {
-        connection.query(
-          'SELECT * FROM `user`',
-          function (error, results, fields) {
-            connection.release();
 
-            if (error) {
-              logger.error('Error getting all users', error);
-              callback(error, null);
-            } else {
-              logger.debug(results);
-              callback(null, {
-                status: 200,
-                message: `Found ${results.length} users.`,
-                data: results,
-              });
-            }
-          }
-        );
-      } else {
-        connection.query(
-          'SELECT * FROM `user` WHERE isActive = ?',
-          [isActive],
-          function (error, results, fields) {
-            connection.release();
+      let sql = 'SELECT * FROM `user`';
+      const values = [];
 
-            if (error) {
-              logger.error(error);
-              callback(error, null);
-            } else {
-              logger.debug(results);
-              callback(null, {
-                message: `Found ${results.length} users.`,
-                data: results,
-              });
-            }
-          }
-        );
+      if (isActive !== undefined) {
+        sql = 'SELECT * FROM `user` WHERE isActive = ?';
+        values.push(isActive);
       }
+
+      connection.query(sql, values, (error, results, fields) => {
+        connection.release();
+
+        if (error) {
+          logger.error('Error executing SQL query:', error);
+          return callback(error, null);
+        }
+
+        logger.debug('Query results:', results);
+
+        const responseData = {
+          message: `Found ${results.length} users.`,
+          data: results,
+        };
+
+        callback(null, responseData);
+      });
     });
   },
 
-  // getAll: (callback) => {
-  //   logger.info('Getting all users');
-
-  //   database.getAll((err, data) => {
-  //     if (err) {
-  //       logger.info('Error getting all users', err.message || 'Unknown error');
-  //       callback(err, null);
-  //     } else {
-  //       logger.trace('All users returned');
-  //       callback(null, data);
-  //     }
-  //   });
-  // },
-
   getById: (userId, callback) => {
-    logger.info('Get user by id', userId);
+    logger.info('Getting user with id:', userId);
 
-    database.getById(userId, (err, user) => {
+    database.getConnection((err, connection) => {
       if (err) {
-        logger.info('Error getting user by id', err.message || 'Unknown error');
+        logger.error('Error getting database connection:', err);
         callback(err, null);
-      } else {
-        logger.trace(`User with id ${userId} returned`);
-        callback(null, user);
       }
+
+      let sql = `SELECT * FROM user WHERE id = ${userId}`;
+      const values = [];
+
+      connection.query(sql, values, (error, results, fields) => {
+        connection.release();
+
+        if (error) {
+          logger.error('Error executing SQL query:', error);
+          return callback(error, null);
+        }
+        
+        if (results.length === 0) {
+          const error = {
+            status: 404,
+            message: `User with ID ${userId} not found`,
+          };
+          
+          logger.warn(`User with ID ${userId} not found`);
+          return callback(error, null);
+        }
+
+        logger.debug('Query results:', results);
+
+        const responseData = {
+          message: `Found user with id ${userId}`,
+          data: results,
+        };
+
+        callback(null, responseData);
+      });
     });
   },
 
