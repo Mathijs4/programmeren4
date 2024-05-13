@@ -117,6 +117,31 @@ let controller = {
       });
     });
   },
+
+  getProfile: (req, res, next) => {
+    const userId = req.userId
+    console.log(typeof userId)
+    logger.trace('Getting profile for userId', userId)
+
+    userService.getProfile(userId, (error, success) => {
+        if (error) {
+
+            return next({
+                status: error.status,
+                message: error.message,
+                data: {}
+            })
+        }
+
+        if (success) {
+            res.status(200).json({
+                status: 200,
+                message: success.message,
+                data: success.data
+            })
+        }
+    })
+}
   
 };
 

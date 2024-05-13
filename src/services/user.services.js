@@ -115,13 +115,13 @@ const userService = {
           logger.error('Error executing SQL query:', error);
           return callback(error, null);
         }
-        
+
         if (results.length === 0) {
           const error = {
             status: 404,
             message: `User with ID ${userId} not found`,
           };
-          
+
           logger.warn(`User with ID ${userId} not found`);
           return callback(error, null);
         }
@@ -189,6 +189,37 @@ const userService = {
 
       // Deleted user successfully, pass the deleted user data to the callback
       callback(null, deletedUser);
+    });
+  },
+
+  getProfile: (userId, callback) => {
+    logger.info('getting profile userId:', userId);
+
+    database.getConnection(function (err, connection) {
+      if (err) {
+        logger.error(err);
+        callback(err, null);
+        return;
+      }
+
+      connection.query(
+        `SELECT id, firstName, lastName FROM user WHERE id = ${userId}`,
+    
+        function (error, results, fields) {
+          connection.release();
+
+          if (error) {
+            logger.error(error);
+            callback(error, null);
+          } else {
+            logger.debug(results);
+            callback(null, {
+              message: `Found ${results.length} user.`,
+              data: results,
+            });
+          }
+        }
+      );
     });
   },
 };
