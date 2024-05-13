@@ -20,12 +20,12 @@ const authController = {
                 // 1. Kijk of deze useraccount bestaat.
                 connection.query(
                     'SELECT `id`, `emailAdress`, `password`, `firstName`, `lastName` FROM `user` WHERE `emailAdress` = ?',
-                    [userCredentials.emailAdress],
+                    [userCredentials.emailAddress],
                     (err, rows, fields) => {
                         connection.release()
                         if (err) {
                             logger.error('Error: ', err.toString())
-                            callback(error.message, null)
+                            callback(err.message, null)
                         }
                         if (rows) {
                             // 2. Er was een resultaat, check het password.

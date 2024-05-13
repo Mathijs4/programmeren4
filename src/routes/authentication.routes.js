@@ -51,6 +51,7 @@ const validateLogin = (req, res, next) => {
             'password should be a string'
         )
 
+        logger.info('validateLogin')
         next();
     } catch (err) {
         return res.status(400).json({
