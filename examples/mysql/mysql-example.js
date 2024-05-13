@@ -3,9 +3,9 @@ const mysql = require('mysql2');
 
 // Create the connection to database
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  database: 'share-a-meal',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  database: process.env.DB_NAME,
 });
 
 // A simple SELECT query
