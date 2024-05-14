@@ -48,47 +48,44 @@ describe('UC101 Inloggen', () => {
       .end((err, res) => {
         expect(res).to.have.status(400);
         expect(res.body.status).to.equal(400);
-        expect(res.body.message).to.equal(
-          'Invalid password'
-        );
+        expect(res.body.message).to.equal('Invalid password');
 
         done();
       });
   });
 
-    it('TC-101-3 Gebruiker bestaat niet', (done) => {
-      chai
-        .request(server)
-        .post(endpointToTest)
-        .send({
-          emailAddress: 'g.fdgdf@gmail.com',
-          password: 'Password123!',
-        })
-        .end((err, res) => {
-          expect(res).to.have.status(404);
-          expect(res.body.status).to.equal(404);
-          expect(res.body.message).to.equal('User not found');
+  it('TC-101-3 Gebruiker bestaat niet', (done) => {
+    chai
+      .request(server)
+      .post(endpointToTest)
+      .send({
+        emailAddress: 'm.vandullemen@server.nl',
+        password: 'secret',
+      })
+      .end((err, res) => {
+        expect(res).to.have.status(404);
+        expect(res.body.status).to.equal(404);
+        expect(res.body.message).to.equal('User not found');
 
-          done();
-        });
-    });
+        done();
+      });
+  });
 
-    it('TC-101-4 Gebruiker succesvol ingelogd', (done) => {
-      chai
-        .request(server)
-        .post(endpointToTest)
-        .send({
-          emailAddress: 'm.vanengelen@gmail.com',
-          password: 'Password123!',
-        })
-        .end((err, res) => {
+  it('TC-101-4 Gebruiker succesvol ingelogd', (done) => {
+    chai
+      .request(server)
+      .post(endpointToTest)
+      .send({
+        emailAddress: 'm.vanengelen@gmail.com',
+        password: 'Password123!',
+      })
+      .end((err, res) => {
         //   expect(res).to.have.status(200);
-          expect(res.body).to.be.an('object');
-          expect(res.body.message).to.equal('User logged in');
-          expect(res.body.data).to.be.an('object');
-          expect(res.body.data.emailAdress).to.equal('m.vanengelen@gmail.com');
-          done();
-
-        });
-    });
+        expect(res.body).to.be.an('object');
+        expect(res.body.message).to.equal('User logged in');
+        expect(res.body.data).to.be.an('object');
+        expect(res.body.data.emailAdress).to.equal('m.vanengelen@gmail.com');
+        done();
+      });
+  });
 });
