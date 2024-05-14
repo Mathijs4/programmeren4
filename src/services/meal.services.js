@@ -130,34 +130,108 @@ const mealService = {
     });
   },
 
-  delete: (mealId, callback) => {
-    logger.info('delete meal', mealId);
+  delete: (mealId, userId, callback) => {
+    logger.info('deleting meal', mealId);
+
     database.getConnection(function (err, connection) {
       if (err) {
         logger.error(err);
-        callback(err, null);
+        if (callback) {
+          callback({
+            status: 500,
+            message: 'Database connection error',
+          });
+        }
         return;
       }
 
       connection.query(
-        'DELETE FROM `meal` WHERE id = ?',
-        [mealId], // Provide mealId as a parameter to the query
-        function (error, results, fields) {
-          connection.release();
+        'SELECT cookId FROM meal WHERE id = ?',
+        [mealId],
+        function (selectError, selectResults, selectFields) {
+          connection.release(); // Release connection after query
 
-          if (error) {
+          if (selectError) {
+            const error = {
+              status: 500,
+              message: 'Error selecting meal',
+            };
             logger.error(
-              'error deleting meal: ',
-              error.message || 'unknown error'
+              'Error selecting meal:',
+              selectError.message || 'unknown error'
             );
-            callback(error, null);
-          } else {
-            logger.trace(`Meal deleted with id ${mealId}.`);
-            callback(null, {
-              message: `Maaltijd met ID ${mealId} is verwijderd`,
-              data: results,
-            });
+            if (callback) {
+              callback(error);
+            }
+            return;
           }
+
+          if (selectResults && selectResults.length === 0) {
+            const error = {
+              status: 404,
+              message: `Meal with ID ${mealId} not found`,
+            };
+            logger.error(error.message);
+            if (callback) {
+              callback(error);
+            }
+            return;
+          }
+
+          const cookId = selectResults[0].cookId;
+
+          if (cookId !== userId) {
+            const unauthorizedError = {
+              status: 403,
+              message: `Unauthorized to delete meal with ID ${mealId}`,
+            };
+            logger.error(unauthorizedError.message);
+            if (callback) {
+              callback(unauthorizedError);
+            }
+            return;
+          }
+
+          connection.query(
+            'DELETE FROM `meal` WHERE id = ?',
+            [mealId],
+            function (deleteError, deleteResults, deleteFields) {
+              if (deleteError) {
+                const error = {
+                  status: 500,
+                  message: 'Error deleting meal',
+                };
+                logger.error(
+                  'Error deleting meal:',
+                  deleteError.message || 'unknown error'
+                );
+                if (callback) {
+                  callback(error);
+                }
+              } else {
+                if (deleteResults && deleteResults.affectedRows > 0) {
+                  logger.trace(`Meal deleted with id ${mealId}.`);
+                  if (callback) {
+                    callback(null, {
+                      status: 200,
+                      message: `Meal with ID ${mealId} is deleted successfully`,
+                      data: deleteResults,
+                    });
+                  }
+                } else {
+                  const error = {
+                    status: 404,
+                    message: `Meal with ID ${mealId} not found`, // This check is redundant; see the section below.
+                  };
+                  logger.error(error.message);
+                  if (callback) {
+                    callback(error);
+                  }
+                }
+              }
+              connection.release(); // Release connection after delete operation
+            }
+          );
         }
       );
     });

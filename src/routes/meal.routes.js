@@ -97,6 +97,23 @@ const validateMealCreate = (req, res, next) => {
       });
     }
   };
+
+  const validateMealId = (req, res, next) => {
+    try {
+      const mealId = parseInt(req.params.mealId, 10);
+      assert(!isNaN(mealId), 'Invalid mealId');
+      assert.strictEqual(typeof mealId, 'number', 'mealId must be a number');
+  
+      logger.info('mealId successfully validated:', mealId);
+      next();
+    } catch (err) {
+      logger.error('mealId validation failed:', err.message);
+      return res.status(400).json({
+        status: 400,
+        message: err.message || 'Invalid mealId',
+      });
+    }
+  };
   
 
 router.post(
@@ -105,9 +122,13 @@ router.post(
   validateMealCreate,
   mealController.addMeal
 );
-router.get('/api/meal', validateToken, mealController.getAllMeals);
-router.get('/api/meal/:mealId', mealController.getMealById);
+
+router.get('/api/meal', mealController.getAllMeals);
+
+router.get('/api/meal/:mealId', validateMealId, mealController.getMealById);
+
 // // router.put('/api/meal/:mealId', mealController.update)
-router.delete('/api/meal/:mealId', mealController.deleteMealById);
+
+router.delete('/api/meal/:mealId', validateToken, mealController.deleteMealById);
 
 module.exports = router;

@@ -106,7 +106,7 @@ const userService = {
       }
 
       connection.query(
-        'SELECT id, emailAddress, firstName, lastName, phoneNumber, password FROM `user` WHERE id = ?',
+        'SELECT id, emailAdress, firstName, lastName, phoneNumber, password FROM `user` WHERE id = ?',
         [userId],
         function (error, resultsUser, fields) {
           connection.release();
