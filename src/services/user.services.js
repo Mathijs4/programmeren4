@@ -106,7 +106,7 @@ const userService = {
       }
 
       connection.query(
-        'SELECT id, emailAddress, firstName, lastName, phoneNumber, password FROM `user` WHERE id = ?',
+        'SELECT id, emailAdress, firstName, lastName, phoneNumber, password FROM `user` WHERE id = ?',
         [userId],
         function (error, resultsUser, fields) {
           connection.release();
@@ -154,12 +154,14 @@ const userService = {
 
   delete: (userId, creatorId, callback) => {
     logger.info('delete user', userId);
+
     database.getConnection(function (err, connection) {
       if (err) {
         logger.error(err);
         callback(err, null);
         return;
       }
+      
       userId = parseInt(userId, 10);
       if (creatorId === userId) {
         connection.query(
@@ -192,6 +194,7 @@ const userService = {
       }
     });
   },
+  
   update: (userId, creatorId, user, callback) => {
     logger.info('update user', userId);
     userId = parseInt(userId, 10);

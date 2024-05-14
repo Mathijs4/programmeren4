@@ -1,6 +1,3 @@
-//
-// Authentication routes
-//
 const assert = require('assert')
 const jwt = require('jsonwebtoken')
 const jwtSecretKey = require('../util/config').secretkey
@@ -8,29 +5,7 @@ const routes = require('express').Router()
 const AuthController = require('../controllers/authentication.controller')
 const logger = require('../util/logger')
 
-//
-//
-//
-// function validateLogin(req, res, next) {
-//     // Verify that we receive the expected input
-//     try {
-//         assert(
-//             typeof req.body.emailAddress === 'string',
-//             'email must be a string.'
-//         )
-//         assert(
-//             typeof req.body.password === 'string',
-//             'password must be a string.'
-//         )
-//         next()
-//     } catch (ex) {
-//         next({
-//             status: 409,
-//             message: ex.toString(),
-//             data: {}
-//         })
-//     }
-// }
+
 const validateLogin = (req, res, next) => {
     try {
         const {
