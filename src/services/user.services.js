@@ -24,9 +24,14 @@ const userService = {
         city,
       } = user;
 
-      // Use parameterized query to insert user data
+      const rolesString = roles.join(','); // Convert roles array to comma-separated string
+      const values = [firstName, lastName, isActive, emailAdress, password, phoneNumber, rolesString, street, city];
+
       const sql = `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      const values = [firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city];
+
+
+      // Log the SQL query before executing
+      logger.debug('Executing SQL query:', sql, 'with values:', values);
 
       connection.query(
         sql,

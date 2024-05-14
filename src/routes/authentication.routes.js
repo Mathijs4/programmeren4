@@ -16,7 +16,7 @@ const validateLogin = (req, res, next) => {
         assert.strictEqual(
             typeof emailAddress,
             'string',
-            'isVega should be a string'
+            'emailAdress should be a string'
         )
 
         assert.ok(password, 'password should not be empty');
@@ -25,13 +25,14 @@ const validateLogin = (req, res, next) => {
             'string',
             'password should be a string'
         )
+        
 
         logger.info('validateLogin')
         next();
     } catch (err) {
         return res.status(400).json({
             status: 400,
-            error: err.toString(),
+            message: err.message,
         });
     }
 };
