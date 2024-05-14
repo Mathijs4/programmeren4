@@ -18,8 +18,6 @@ let authToken = '';
 before((done) => {
   const payload = {
     userId: '48',
-    emailAdress: 'm.vanengelen@gmail.com',
-    password: 'Password123!',
   };
 
   jwt.sign(payload, jwtSecretKey, { expiresIn: '1h' }, (err, token) => {
@@ -111,40 +109,40 @@ describe('UC205 Updaten van usergegevens', () => {
 
     done();
   });
-});
 
-it('TC-205-5 niet ingelogd', (done) => {
-  chai
-    .request(server)
-    .put(`${endpointToTest}/48`)
-    .send({
-      emailAddress: 'm.vanengelen@gmail.com',
-    })
-    .end((err, res) => {
-      expect(res).to.have.status(401);
-      expect(res.body.status).to.equal(401);
-      expect(res.body.message).to.equal('Unauthorized');
-
-      done();
-    });
-
-  it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
+  it('TC-205-5 niet ingelogd', (done) => {
     chai
       .request(server)
-      .put(`${endpointToTest}/${userId}`)
-      .set('Authorization', `Bearer ${authToken}`)
+      .put(`${endpointToTest}/48`)
       .send({
         emailAddress: 'm.vanengelen@gmail.com',
-        //   isActive: true
       })
       .end((err, res) => {
-        expect(res).to.have.status(200);
-        expect(res.body.status).to.equal(200);
-        expect(res.body.message).to.equal(
-          'phoneNumber should match the pattern'
-        );
+        expect(res).to.have.status(401);
+        expect(res.body.status).to.equal(401);
+        expect(res.body.message).to.equal('Unauthorized');
 
         done();
       });
+
+    it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
+      chai
+        .request(server)
+        .put(`${endpointToTest}/${userId}`)
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          emailAddress: 'm.vanengelen@gmail.com',
+          //   isActive: true
+        })
+        .end((err, res) => {
+          expect(res).to.have.status(200);
+          expect(res.body.status).to.equal(200);
+          expect(res.body.message).to.equal(
+            'phoneNumber should match the pattern'
+          );
+
+          done();
+        });
+    });
   });
 });

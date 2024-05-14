@@ -62,7 +62,7 @@ const mealService = {
           } else {
             logger.trace('Meal created');
             callback(null, {
-              status: 200,
+              status: 201,
               message: 'Meal created',
               data: meal,
             });
