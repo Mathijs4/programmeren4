@@ -24,9 +24,13 @@ const userService = {
         city,
       } = user;
 
-      connection.query(
-        `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city) VALUES ('${firstName}', '${lastName}', ${isActive}, '${emailAdress}', '${password}', '${phoneNumber}', '${roles}', '${street}', '${city}')`,
+      // Use parameterized query to insert user data
+      const sql = `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      const values = [firstName, lastName, isActive, emailAdress, password, phoneNumber, roles, street, city];
 
+      connection.query(
+        sql,
+        values,
         function (error, results, fields) {
           connection.release();
 
@@ -34,24 +38,23 @@ const userService = {
             if (error.code === 'ER_DUP_ENTRY') {
               const errorMessage = `Email address '${emailAdress}' already exists.`;
               const errorObject = new Error(errorMessage);
-
               errorObject.status = 400;
               callback(errorObject, null);
             } else {
-              logger.error(
-                'Error creating user:',
-                error.message || 'unknown error'
-              );
-
-              callback(error, null);
+              logger.error('Error creating user:', error.message || 'unknown error');
+              const errorObject = new Error('Failed to create user');
+              errorObject.status = 500;
+              callback(errorObject, null);
             }
           } else {
-            logger.trace('User created.');
+            const userId = results.insertId; // Get the last insert ID
+            logger.trace(`User created with ID: ${userId}`);
 
+            const userDataWithId = { ...user, id: userId };
             callback(null, {
               status: 201,
-              message: 'User created.',
-              data: user,
+              message: 'User registered successfully',
+              data: userDataWithId,
             });
           }
         }
@@ -161,7 +164,7 @@ const userService = {
         callback(err, null);
         return;
       }
-      
+
       userId = parseInt(userId, 10);
       if (creatorId === userId) {
         connection.query(
@@ -194,7 +197,7 @@ const userService = {
       }
     });
   },
-  
+
   update: (userId, creatorId, user, callback) => {
     logger.info('update user', userId);
     userId = parseInt(userId, 10);
@@ -203,7 +206,7 @@ const userService = {
       const { emailAddress } = user;
 
       logger.info('emailAddress:', emailAddress);
-      
+
       if (!emailAddress) {
         const errorObject = new Error('Email address is required');
         errorObject.status = 400;
@@ -298,7 +301,6 @@ const userService = {
       callback(errorObject, null);
     }
   },
-
 
   getProfile: (userId, callback) => {
     logger.info('getting profile userId:', userId);
