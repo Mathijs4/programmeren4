@@ -46,10 +46,10 @@ function validateToken(req, res, next) {
     // The headers should contain the authorization-field with value 'Bearer [token]'
     const authHeader = req.headers.authorization
     if (!authHeader) {
-        logger.warn('Authorization header missing!')
+        logger.warn('Unauthorized')
         next({
             status: 401,
-            message: 'Authorization header missing!',
+            message: 'Unauthorized',
             data: {}
         })
     } else {
