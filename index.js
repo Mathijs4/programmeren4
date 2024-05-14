@@ -1,6 +1,7 @@
 const express = require('express');
 const userRoutes = require('./src/routes/user.routes');
 const authRoutes = require('./src/routes/authentication.routes').routes;
+const mealRoutes = require('./src/routes/meal.routes');
 const bodyParser = require('body-parser');
 
 
@@ -18,6 +19,7 @@ app.all('*', (req, res, next) => {
 
 app.use(userRoutes);
 app.use('/api/auth', authRoutes);
+app.use(mealRoutes);
 
 app.all('/'), (req, res) =>{
   res.status(200).json({

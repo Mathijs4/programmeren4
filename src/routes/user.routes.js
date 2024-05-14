@@ -57,7 +57,6 @@ const validateUserCreate = (req, res, next) => {
       'password should match the pattern'
     );
 
-    assert.ok(isActive !== undefined, 'isActive should not be empty');
     assert.strictEqual(
       typeof isActive,
       'boolean',
