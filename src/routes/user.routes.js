@@ -3,6 +3,7 @@ const router = express.Router();
 const userController = require('../controllers/user.controller');
 const assert = require('assert');
 const validateToken = require('./authentication.routes').validateToken;
+const logger = require('../util/logger');
 
 const validateUserCreate = (req, res, next) => {
   try {
@@ -94,18 +95,20 @@ const validateUserCreate = (req, res, next) => {
 
 const validateUserId = (req, res, next) => {
   try {
-    const userId = parseInt(req.params.userId);
-    assert.ok(userId, 'userId should not be empty');
-    assert.strictEqual(typeof userId, 'number', 'userId should be a number');
-    logger.info('validated userId');
+    const userId = parseInt(req.params.userId, 10);
+    assert(!isNaN(userId), 'Invalid userId');
+    assert.strictEqual(typeof userId, 'number', 'userId must be a number');
+
+    logger.info('User ID successfully validated:', userId);
     next();
   } catch (err) {
+    logger.error('User ID validation failed:', err.message);
     return res.status(400).json({
       status: 400,
-      message: err.message || 'Invalid user id',
+      message: err.message || 'Invalid user ID',
     });
   }
-}
+};
 
 router.get('/api/info', (req, res) => {
   res.status(200).json({
@@ -119,12 +122,22 @@ router.post('/api/user', validateUserCreate, userController.addUser);
 
 router.get('/api/user', validateToken, userController.getAllUsers);
 
-router.get('/api/user/:userId', userController.getUserById);
+router.get('/api/user/profile', validateToken, userController.getProfile);
 
-router.put('/api/user/:userId', userController.editUserById);
+router.get('/api/user/:userId', validateToken, userController.getUserById);
 
-router.delete('/api/user/:userId', userController.deleteUserById);
+router.put(
+  '/api/user/:userId',
+  validateToken,
+  validateUserId,
+  userController.editUserById
+);
 
-router.get('/api/user/profile', validateToken, userController.getProfile)
+router.delete(
+  '/api/user/:userId',
+  validateToken,
+  validateUserId,
+  userController.deleteUserById
+);
 
 module.exports = router;

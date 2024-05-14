@@ -19,6 +19,13 @@ app.all('*', (req, res, next) => {
 app.use(userRoutes);
 app.use('/api/auth', authRoutes);
 
+app.all('/'), (req, res) =>{
+  res.status(200).json({
+    status: 200,
+    message: 'Welcome to the API',
+  });
+};
+
 app.all('*', (req, res) => {
   res.status(404).json({
     status: 404,
