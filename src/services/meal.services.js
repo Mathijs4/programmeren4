@@ -120,10 +120,21 @@ const mealService = {
             logger.error(error);
             callback(error, null);
           } else {
-            logger.debug(results);
-            callback(null, {
-              data: results,
-            });
+            if (results && results.length > 0) {
+              // Meal found, return the data
+              logger.debug(results);
+              callback(null, {
+                data: results,
+              });
+            } else {
+              // Meal not found, return a 404 error
+              const notFoundError = {
+                status: 404,
+                message: `Meal with ID ${mealId} not found`,
+              };
+              logger.error(notFoundError.message);
+              callback(notFoundError, null);
+            }
           }
         }
       );
