@@ -92,6 +92,97 @@ const validateUserCreate = (req, res, next) => {
   }
 };
 
+const validateUserUpdate = (req, res, next) => {
+  try {
+      const {
+          firstName,
+          lastName,
+          emailAddress,
+          password,
+          isActive,
+          street,
+          city,
+          phoneNumber,
+          roles,
+      } = req.body;
+
+      if (firstName !== undefined) {
+      assert.strictEqual(
+          typeof firstName,
+          'string',
+          'firstName should be a string'
+      )}
+
+      if (lastName !== undefined) {
+      assert.strictEqual(
+          typeof lastName,
+          'string',
+          'lastName should be a string'
+      )}
+
+      assert.ok(emailAddress, 'emailAddress should not be empty');
+
+      assert.strictEqual(
+          typeof emailAddress,
+          'string',
+          'emailAddress should be a string'
+      )
+
+      assert.ok(
+          /^[a-zA-Z][.][a-zA-Z]{2,}@[a-zA-Z]{2,}\.[a-zA-Z]{2,3}$/.test(
+              emailAddress
+          ),
+          'emailAddress should match the pattern'
+      )
+
+      if (password !== undefined) {
+      assert.strictEqual(
+          typeof password,
+          'string',
+          'password should be a string'
+      )
+      assert.ok(
+          /^(?=.*[A-Z])(?=.*[0-9]).{8,}$/.test(password),
+          'password should match the pattern'
+      )}
+
+
+      if (isActive !== undefined) {
+      assert.strictEqual(
+          typeof isActive,
+          'boolean',
+          'isActive should be a boolean'
+      )}
+
+      if (street !== undefined) {
+      assert.strictEqual(typeof street, 'string', 'street should be a string')}
+
+      if (city !== undefined) {
+      assert.strictEqual(typeof city, 'string', 'city should be a string')}
+
+      if (phoneNumber !== undefined) {
+      assert.strictEqual(
+          typeof phoneNumber,
+          'string',
+          'phoneNumber should be a string'
+      )
+      assert.ok(
+          /^06[-\s]?\d{8}$/.test(phoneNumber),
+          'phoneNumber should match the pattern'
+      )}
+      if (roles !== undefined) {
+      assert.ok(Array.isArray(roles), 'roles should be an array')}
+
+      next();
+  } catch (err) {
+      return res.status(400).json({
+          status: 400,
+          message: err.message || 'Invalid user data',
+          error: err.toString(),
+      });
+  }
+};
+
 const validateUserId = (req, res, next) => {
   try {
     const userId = parseInt(req.params.userId, 10);
@@ -127,6 +218,7 @@ router.get('/api/user/:userId', validateToken, userController.getUserById);
 
 router.put(
   '/api/user/:userId',
+  validateUserUpdate,
   validateToken,
   validateUserId,
   userController.editUserById

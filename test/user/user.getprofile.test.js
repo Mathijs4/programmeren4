@@ -30,7 +30,7 @@ before((done) => {
   });
 });
 
-describe('UC202 Opvragen van gebruikersprofiel', () => {
+describe('UC203 Opvragen van gebruikersprofiel', () => {
   beforeEach((done) => {
     console.log('Before each test');
     done();

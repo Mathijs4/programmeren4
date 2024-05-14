@@ -30,7 +30,7 @@ before((done) => {
   });
 });
 
-describe('UC202 Opvragen van usergegevens bij id', () => {
+describe('UC204 Opvragen van usergegevens bij id', () => {
   beforeEach((done) => {
     console.log('Before each test');
     done();
