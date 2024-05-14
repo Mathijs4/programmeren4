@@ -248,51 +248,114 @@ const mealService = {
     });
   },
 
-  update: (mealId, meal, callback) => {
-    logger.info('update meal', mealId);
+  update: (mealId, meal, userId, callback) => {
+    logger.info('Updating meal', mealId);
+    mealId = parseInt(mealId, 10);
 
-    const valuesToUpdate = [];
-    const columnsToUpdate = Object.keys(meal)
-      .filter((key) => meal[key] !== undefined && meal[key] !== null)
-      .map((key) => {
-        valuesToUpdate.push(meal[key]);
-        return `${key}=?`;
-      });
-
-    if (columnsToUpdate.length === 0) {
-      callback(new Error('No fields to update'), null);
-      return;
+    if (!meal || typeof meal !== 'object' || Object.keys(meal).length === 0) {
+      const errorObject = new Error('Meal data is required for update');
+      errorObject.status = 400;
+      return callback(errorObject, null);
     }
 
-    const setClause = columnsToUpdate.join(', ');
-    const sql = `UPDATE meal SET ${setClause} WHERE id = ?`;
-
-    database.getConnection(function (err, connection) {
+    // Retrieve the cookId associated with the mealId from the database
+    database.getConnection((err, connection) => {
       if (err) {
-        logger.error(err);
-        callback(err, null);
-        return;
+        logger.error(
+          'Error getting database connection:',
+          err.message || 'unknown error'
+        );
+        const errorObject = new Error('Database connection error');
+        errorObject.status = 500;
+        return callback(errorObject, null);
       }
 
-      const values = [...valuesToUpdate, mealId];
+      const selectCookIdQuery = 'SELECT cookId FROM meal WHERE id = ?';
+      connection.query(
+        selectCookIdQuery,
+        [mealId],
+        (error, results, fields) => {
+          connection.release(); // Release the connection after executing the query
 
-      connection.query(sql, values, function (error, results, fields) {
-        connection.release();
+          if (error) {
+            logger.error(
+              'Error retrieving cookId:',
+              error.message || 'unknown error'
+            );
+            const errorObject = new Error('Error querying database');
+            errorObject.status = 500;
+            return callback(errorObject, null);
+          }
 
-        if (error) {
-          logger.error(
-            'Error updating meal:',
-            error.message || 'unknown error'
+          if (results.length === 0) {
+            const notFoundError = new Error('Meal not found');
+            notFoundError.status = 404;
+            return callback(notFoundError, null);
+          }
+
+          const cookId = results[0].cookId;
+
+          // Check if the retrieved cookId matches the userId
+          if (cookId !== userId) {
+            const unauthorizedError = new Error(
+              'Unauthorized to update this meal'
+            );
+            unauthorizedError.status = 401;
+            return callback(unauthorizedError, null);
+          }
+
+          const columnsToUpdate = Object.keys(meal).filter(
+            (key) =>
+              meal[key] !== undefined && meal[key] !== null && key !== 'cookId'
           );
-          callback(error, null);
-        } else {
-          logger.trace(`Meal updated with id ${mealId}.`);
-          callback(null, {
-            message: `Meal updated with id ${mealId}.`,
-            data: results,
+
+          if (columnsToUpdate.length === 0) {
+            const noFieldsError = new Error('No valid fields to update');
+            noFieldsError.status = 400;
+            return callback(noFieldsError, null);
+          }
+
+          const setClause = columnsToUpdate.map((key) => `${key}=?`).join(', ');
+          const valuesToUpdate = columnsToUpdate.map((key) => {
+            if (key === 'allergenes') {
+              // Convert allergenes array to JSON string (or other suitable format)
+              return JSON.stringify(meal[key]);
+            } else {
+              return meal[key];
+            }
           });
+          valuesToUpdate.push(mealId); // Add mealId at the end for WHERE clause
+          
+
+          const updateQuery = `UPDATE meal SET ${setClause} WHERE id = ?`;
+
+          logger.debug('Update Query:', updateQuery);
+          logger.debug('Values to Update:', valuesToUpdate);
+
+          // Execute the UPDATE query with the prepared values
+          connection.query(
+            updateQuery,
+            valuesToUpdate,
+            (updateError, updateResults, updateFields) => {
+              if (updateError) {
+                logger.error(
+                  'Error updating meal:',
+                  updateError.message || 'unknown error'
+                );
+                const errorObject = new Error('Error updating meal');
+                errorObject.status = 500;
+                return callback(errorObject, null);
+              }
+
+              logger.trace(`Meal updated with id ${mealId}.`);
+              callback(null, {
+                message: `Meal updated with id ${mealId}.`,
+                data: meal,
+              });
+            }
+          );
         }
-      });
+      );
     });
   },
 };

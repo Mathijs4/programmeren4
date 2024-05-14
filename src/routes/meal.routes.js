@@ -127,8 +127,8 @@ router.get('/api/meal', mealController.getAllMeals);
 
 router.get('/api/meal/:mealId', validateMealId, mealController.getMealById);
 
-// // router.put('/api/meal/:mealId', mealController.update)
+router.put('/api/meal/:mealId', validateToken, validateMealId, mealController.updateMealById);
 
-router.delete('/api/meal/:mealId', validateToken, mealController.deleteMealById);
+router.delete('/api/meal/:mealId', validateToken, validateMealId, mealController.deleteMealById);
 
 module.exports = router;

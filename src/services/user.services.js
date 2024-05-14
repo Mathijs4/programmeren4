@@ -154,12 +154,14 @@ const userService = {
 
   delete: (userId, creatorId, callback) => {
     logger.info('delete user', userId);
+
     database.getConnection(function (err, connection) {
       if (err) {
         logger.error(err);
         callback(err, null);
         return;
       }
+      
       userId = parseInt(userId, 10);
       if (creatorId === userId) {
         connection.query(
@@ -192,6 +194,7 @@ const userService = {
       }
     });
   },
+  
   update: (userId, creatorId, user, callback) => {
     logger.info('update user', userId);
     userId = parseInt(userId, 10);
