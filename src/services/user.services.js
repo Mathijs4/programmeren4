@@ -206,6 +206,7 @@ const userService = {
   update: (userId, creatorId, user, callback) => {
     logger.info('update user', userId);
     userId = parseInt(userId, 10);
+    console.log(userId, creatorId)
 
     if (userId === creatorId) {
       const { emailAddress } = user;

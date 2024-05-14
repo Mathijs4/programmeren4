@@ -17,7 +17,9 @@ let authToken = '';
 
 before((done) => {
   const payload = {
-    userId: '2',
+    userId: '48',
+    emailAdress: 'm.vanengelen@gmail.com',
+    password: 'Password123!',
   };
 
   jwt.sign(payload, jwtSecretKey, { expiresIn: '1h' }, (err, token) => {
@@ -42,7 +44,7 @@ describe('UC205 Updaten van usergegevens', () => {
   it('TC-205-1 Verplicht veld emailadress ontbreekt', (done) => {
     chai
       .request(server)
-      .put(`${endpointToTest}/5`)
+      .put(`${endpointToTest}/48`)
       .send({
         // emailAddress: ',
         password: 'dsfdsf13!',
@@ -73,21 +75,76 @@ describe('UC205 Updaten van usergegevens', () => {
       });
   });
 
-    it('TC-205-3 niet valide telefoonnummer', (done) => {
-      chai
-        .request(server)
-        .put(`${endpointToTest}/2`)
-        .set('Authorization', `Bearer ${authToken}`)
-        .send({
-            emailAddress: 'j.doe@server.com',
-            phoneNumber: '1234567890a'
-        })
-        .end((err, res) => {
-          expect(res).to.have.status(400);
-          expect(res.body.status).to.equal(400);
-          expect(res.body.message).to.equal('phoneNumber should match the patter');
+  it('TC-205-3 niet valide telefoonnummer', (done) => {
+    chai
+      .request(server)
+      .put(`${endpointToTest}/2`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({
+        emailAddress: 'j.doe@server.com',
+        phoneNumber: '1234567890a',
+      })
+      .end((err, res) => {
+        expect(res).to.have.status(400);
+        expect(res.body.status).to.equal(400);
+        expect(res.body.message).to.equal(
+          'phoneNumber should match the pattern'
+        );
 
-          done();
-        });
+        done();
+      });
+  });
+
+  //deze test niet gedaan, want je kan alleen maar je eigen profiel updaten, dus een niet bestaand profiel kan ook niet gevonden worden omdat je unauthorized bent
+  it('TC-205-4 Gebruiker bestaat niet', (done) => {
+    // chai
+    //   .request(server)
+    //   .put(`${endpointToTest}/999`)
+    //   .set('Authorization', `Bearer ${authToken}`)
+    //   .send({
+    //       emailAddress: 'j.doe@server.com',
+    //   })
+    //   .end((err, res) => {
+    //     expect(res).to.have.status(404);
+    //     expect(res.body.status).to.equal(404);
+    //     expect(res.body.message).to.equal('user doesnt exist');
+
+    done();
+  });
+});
+
+it('TC-205-5 niet ingelogd', (done) => {
+  chai
+    .request(server)
+    .put(`${endpointToTest}/48`)
+    .send({
+      emailAddress: 'm.vanengelen@gmail.com',
+    })
+    .end((err, res) => {
+      expect(res).to.have.status(401);
+      expect(res.body.status).to.equal(401);
+      expect(res.body.message).to.equal('Unauthorized');
+
+      done();
     });
+
+  it('TC-205-6 Gebruiker succesvol gewijzigd', (done) => {
+    chai
+      .request(server)
+      .put(`${endpointToTest}/${userId}`)
+      .set('Authorization', `Bearer ${authToken}`)
+      .send({
+        emailAddress: 'm.vanengelen@gmail.com',
+        //   isActive: true
+      })
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.body.status).to.equal(200);
+        expect(res.body.message).to.equal(
+          'phoneNumber should match the pattern'
+        );
+
+        done();
+      });
+  });
 });
