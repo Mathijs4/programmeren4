@@ -95,9 +95,9 @@ describe('UC301 Toevoegen van maaltijd', () => {
         price: 14,
         maxAmountOfParticipants: 10,
         imageUrl: 'https://www.example.com/lasagna.jpg',
-        isVega: 1,
-        isVegan: 0,
-        isToTakeHome: 0,
+        isVega: true,
+        isVegan: true,
+        isToTakeHome: false,
         allergenes: [],
       })
       .end((err, res) => {

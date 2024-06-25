@@ -146,7 +146,7 @@ describe('UC201 Registreren als nieuwe user', () => {
         id: 500,
         firstName: 'Voornaam',
         lastName: 'Achternaam',
-        emailAdress: 's.teeasetmaiilsssss@server.nl',
+        emailAdress: 's.teeeasetmaaiiilsssss@server.nl',
         password: 'Sdecret1234!',
         phoneNumber: '0612345678',
         isActive: true,
@@ -161,7 +161,7 @@ describe('UC201 Registreren als nieuwe user', () => {
         expect(res.body.data).to.be.an('object');
         expect(res.body.data.firstName).to.equal('Voornaam');
         expect(res.body.data.lastName).to.equal('Achternaam');
-        expect(res.body.data.emailAdress).to.equal('s.teeasetmailsssss@server.nl');
+        expect(res.body.data.emailAdress).to.equal('s.teeeasetmaaiiilsssss@server.nl');
         expect(res.body.data).to.have.property('id').that.is.a('number');
         done();
 
