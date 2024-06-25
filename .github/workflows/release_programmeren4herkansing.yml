@@ -22,9 +22,10 @@ jobs:
           node-version: '20.x'
 
       - name: npm install, build, and test
-        
         run: |
           npm install
+          npm run build --if-present
+          npm test --if-present
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -52,49 +53,56 @@ jobs:
         run: npm test
 
   integrationtests:
-        runs-on: ubuntu-latest
-        needs: build
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      MYSQL_ROOT_PASSWORD: root # default root password to use must be 'root'
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: share_a_meal
+      DB_USER: root
+      DB_PASSWORD: root
+    services:
+      mysql:
+        image: mysql:5.7
         env:
-            MYSQL_ROOT_PASSWORD: root # default root password to use must be 'root'
-            DB_HOST: 127.0.0.1
-            DB_PORT: 3306
-            DB_DATABASE: share_a_meal
-            DB_USER: root
-            DB_PASSWORD: root
-        services:
-            mysql:
-                image: mysql:5.7
-                ports:
-                    - 3306
-        steps:
-            - name: Download artifact from build job
-              uses: actions/download-artifact@v4
-              with:
-                  name: node-app
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
-            - name: Unzip artifact for tests
-              run: unzip release.zip
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app
 
-            - name: Start MySQL connection from host
-              run: |
-                  sudo /etc/init.d/mysql start
-                  sudo apt-get install -y mysql-client
-                  mysql -h 127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "SHOW DATABASES;"
-                  mysql -h 127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE ${{env.DB_DATABASE}};"
+      - name: Unzip artifact for tests
+        run: unzip release.zip
 
-            - name: Import the database
-              run: |
-                  mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} < share-a-meal.sql
-                  mysql -uroot -p${{env.MYSQL_ROOT_PASSWORD}} ${{env.DB_DATABASE}} -e "SHOW TABLES;"
+      - name: Wait for MySQL service
+        run: |
+          while ! mysqladmin ping -h127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 5
+          done
 
-            - name: npm test
-              run: |
-                  npm test -- --DB_PASSWORD $MYSQL_ROOT_PASSWORD --DB_USER root --DB_NAME $DB_DATABASE --DB_PORT $DB_PORT
+      - name: Import the database
+        run: |
+          mysql -h127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ env.DB_DATABASE }};"
+          mysql -h127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.DB_DATABASE }} < path/to/your/share-a-meal.sql
 
+      - name: Run integration tests
+        run: |
+          npm test -- --DB_PASSWORD ${{ env.DB_PASSWORD }} --DB_USER ${{ env.DB_USER }} --DB_NAME ${{ env.DB_DATABASE }} --DB_PORT ${{ env.DB_PORT }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [integrationtests]
+    needs: integrationtests
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -117,7 +125,7 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FC6A52AF722544DAAEC584F62EEAEE0E }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3D3D7DC56B184656B3CE3F30C3D27759 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
