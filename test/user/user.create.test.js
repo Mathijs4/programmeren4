@@ -146,7 +146,7 @@ describe('UC201 Registreren als nieuwe user', () => {
         id: 500,
         firstName: 'Voornaam',
         lastName: 'Achternaam',
-        emailAdress: 's.teeasetmailsssss@server.nl',
+        emailAdress: 's.teeasetmaiilsssss@server.nl',
         password: 'Sdecret1234!',
         phoneNumber: '0612345678',
         isActive: true,

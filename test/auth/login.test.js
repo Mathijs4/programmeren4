@@ -59,7 +59,7 @@ describe('UC101 Inloggen', () => {
       .request(server)
       .post(endpointToTest)
       .send({
-        emailAddress: 'm.vandullemen@server.nl',
+        emailAddress: 'm.vaaandullemen@server.nl',
         password: 'secret',
       })
       .end((err, res) => {
