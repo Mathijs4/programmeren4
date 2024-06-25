@@ -86,23 +86,23 @@ jobs:
 
       - name: Wait for MySQL service
         run: |
-          while ! mysqladmin ping -h127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} --silent; do
+          until mysqladmin ping -h 127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} --silent; do
             echo "Waiting for MySQL to be ready..."
             sleep 5
           done
 
-      - name: Import the database
+      - name: Create database and import schema
         run: |
-          mysql -h127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ env.DB_DATABASE }};"
-          mysql -h127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.DB_DATABASE }} < path/to/your/share-a-meal.sql
+          mysql -h 127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ env.DB_DATABASE }};"
+          mysql -h 127.0.0.1 -uroot -p${{ env.MYSQL_ROOT_PASSWORD }} ${{ env.DB_DATABASE }} < ../../share-a-meal.sql
 
       - name: Run integration tests
         run: |
-          npm test -- --DB_PASSWORD ${{ env.DB_PASSWORD }} --DB_USER ${{ env.DB_USER }} --DB_NAME ${{ env.DB_DATABASE }} --DB_PORT ${{ env.DB_PORT }}
+          npm test -- --DB_PASSWORD=${{ env.DB_PASSWORD }} --DB_USER=${{ env.DB_USER }} --DB_NAME=${{ env.DB_DATABASE }} --DB_PORT=${{ env.DB_PORT }}
 
   deploy:
     runs-on: ubuntu-latest
-    needs: integrationtests
+    needs: [integrationtests]
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -111,7 +111,7 @@ jobs:
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: node-app
 
@@ -121,9 +121,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_9535EBAC6E1141DEAB93BB9885AF35C8 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FC6A52AF722544DAAEC584F62EEAEE0E }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_3D3D7DC56B184656B3CE3F30C3D27759 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
